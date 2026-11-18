@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>Connect Four Voice AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/index.html" aria-label="Connect Four Voice AI">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span><strong>CONNECT FOUR</strong><small>VOICE AI LAB</small></span>
+      </a>
+      <div class="top-actions">
+        <label class="mode-label" for="modeSelect">AI 接続</label>
+        <select id="modeSelect" aria-label="AI接続モード">
+          <option value="mock">Mock</option>
+          <option value="azure">Azure OpenAI</option>
+        </select>
+        <span class="connection-pill"><span id="azureDot" class="status-dot"></span><span id="azureStatus">確認中</span></span>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <p class="eyebrow">GAME COMPANION · REALTIME VOICE</p>
+        <h1>盤面にあわせて、<span>声と気持ちが変わる。</span></h1>
+        <p class="intro-copy">Connect Four のゲーム状況を受け取り、気分や性格を反映して会話する音声AIです。</p>
+      </div>
+      <div class="hero-orb" aria-hidden="true"><span>AI</span><b>●</b></div>
+    </section>
+
+    <div id="errorBox" class="error-box" role="alert" hidden></div>
+
+    <section class="dashboard">
+      <section class="panel game-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">GAME STATE</p><h2>対戦状況</h2></div>
+          <span class="live-tag"><span class="status-dot green"></span>LOCAL MOCK</span>
+        </div>
+        <div class="game-controls">
+          <label>現在のターン
+            <select id="turnSelect"><option value="human">人間</option><option value="robot">ロボット</option></select>
+          </label>
+          <label>ゲーム状態
+            <select id="gameStatusSelect"><option value="not_started">開始前</option><option value="playing">対戦中</option><option value="ended">終了</option></select>
+          </label>
+          <label>盤面評価
+            <select id="advantageSelect"><option value="winning">AI有利</option><option value="even">互角</option><option value="losing">AI不利</option></select>
+          </label>
+          <label>終了結果
+            <select id="winnerSelect"><option value="none">未確定</option><option value="robot">AI勝利</option><option value="human">AI敗北</option><option value="draw">引き分け</option></select>
+          </label>
+          <label class="toggle-row">相手の勝利が迫っている
+            <input id="threatToggle" type="checkbox"><span class="toggle"></span>
+          </label>
+          <label>AIの次の列
+            <select id="columnSelect">
+              <option value="1">1 列目</option><option value="2">2 列目</option><option value="3">3 列目</option>
+              <option value="4" selected>4 列目</option><option value="5">5 列目</option><option value="6">6 列目</option><option value="7">7 列目</option>
+            </select>
+          </label>
+        </div>
+        <div class="emotion-strip">
+          <div class="emotion-face" id="emotionFace" aria-hidden="true">◉</div>
+          <div class="emotion-copy"><span>AIの感情</span><strong id="emotionLabel">冷静</strong><small id="emotionDescription">盤面を観察中</small></div>
+          <div class="emotion-vector" id="emotionVector">自信 50 · 緊張 20 · 喜び 35</div>
+        </div>
+        <p class="helper">盤面入力はAIの発言だけに反映します。勝敗やゲームロジックは変更しません。</p>
+      </section>
+
+      <section class="panel personality-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">PERSONALITY</p><h2>性格とハッタリ</h2></div>
+          <span class="spark">✦</span>
+        </div>
+        <label class="select-label">AIの性格
+          <select id="personalitySelect"><option value="kind">やさしい</option><option value="normal" selected>普通</option><option value="cheeky">生意気</option></select>
+        </label>
+        <label class="toggle-row bluff-row">ハッタリ機能
+          <input id="bluffToggle" type="checkbox" checked><span class="toggle"></span>
+        </label>
+        <div class="range-header"><label for="bluffProbability">発生確率</label><strong><span id="probabilityValue">35</span>%</strong></div>
+        <input id="bluffProbability" type="range" min="0" max="100" value="35">
+        <p class="helper">AI不利のとき、設定確率で余裕があるように発言します。</p>
+        <div class="bluff-sample"><span>セリフの例</span><em>「ふふっ、もちろん想定どおりですよ」</em></div>
+      </section>
+
+      <section class="panel voice-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">VOICE CHANNEL</p><h2>音声会話</h2></div>
+          <span class="connection-pill"><span id="micDot" class="status-dot"></span><span id="micStatus">停止中</span></span>
+        </div>
+        <div class="voice-actions">
+          <button id="voiceButton" class="primary-button" type="button"><span class="mic-icon">◖</span><span id="voiceButtonLabel">音声会話を開始</span></button>
+          <label class="sound-toggle"><input id="ttsToggle" type="checkbox" checked><span class="toggle"></span><span id="ttsLabel">読み上げ ON</span></label>
+        </div>
+        <div class="transcript-card">
+          <div class="card-label"><span>音声認識</span><span id="recognitionState">待機中</span></div>
+          <p id="transcriptText" class="transcript-text muted">マイクを開始すると、認識した言葉がここに表示されます。</p>
+        </div>
+        <p class="helper">AIの読み上げ中はマイク音声の送信を一時停止します。Mock音声では認識結果を定型表示します。</p>
+      </section>
+
+      <section class="panel chat-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">CONVERSATION</p><h2>AIとの会話</h2></div>
+          <button id="clearChatButton" class="quiet-button" type="button">履歴を消去</button>
+        </div>
+        <div id="chatHistory" class="chat-history" aria-live="polite">
+          <div class="empty-chat" id="emptyChat"><span>✧</span><p>ゲームや好きなことを話しかけてください。</p><small>テキスト入力、または音声会話から始められます。</small></div>
+        </div>
+        <form id="chatForm" class="chat-form">
+          <input id="chatInput" type="text" maxlength="1000" autocomplete="off" placeholder="メッセージを入力…" aria-label="メッセージ">
+          <button type="submit" aria-label="送信">送信 <span>↗</span></button>
+        </form>
+      </section>
+    </section>
+    <footer><span>CONNECT FOUR VOICE AI</span><span>ローカル実行 · Azureキーはサーバー内で管理</span></footer>
+  </main>
+  <script src="/static/game.js"></script>
+  <script src="/static/emotion.js"></script>
+  <script src="/static/audio.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

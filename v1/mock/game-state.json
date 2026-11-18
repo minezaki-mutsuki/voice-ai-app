@@ -1,0 +1,10 @@
+{
+  "event": "robot_turn_started",
+  "turn": "robot",
+  "game_status": "playing",
+  "advantage": "losing",
+  "previous_advantage": "even",
+  "opponent_threat": true,
+  "robot_move_column": 4,
+  "winner": null
+}
